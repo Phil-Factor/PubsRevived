@@ -5,9 +5,11 @@ GO
 
 CREATE VIEW [dbo].[titleview]
 AS
-select title, au_ord, au_lname, price, ytd_sales, pub_id
-from authors, titles, titleauthor
-where authors.au_id = titleauthor.au_id
-   AND titles.title_id = titleauthor.title_id
+SELECT t.title, ta.au_ord, a.au_lname, t.price, t.ytd_sales, t.pub_id
+  FROM dbo.authors AS a
+    INNER JOIN dbo.titleauthor AS ta
+      ON a.au_id = ta.au_id
+    INNER JOIN dbo.titles AS t
+      ON t.title_id = ta.title_id;
 
 GO

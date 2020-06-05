@@ -3,13 +3,14 @@ GO
 SET ANSI_NULLS ON
 GO
 
-CREATE PROCEDURE [dbo].[reptq1] AS
-select 
-	case when grouping(pub_id) = 1 then 'ALL' else pub_id end as pub_id, 
-	avg(price) as avg_price
-from titles
-where price is NOT NULL
-group by pub_id with rollup
-order by pub_id
-
+CREATE PROCEDURE [dbo].[reptq1]
+AS
+  BEGIN
+    SELECT CASE WHEN Grouping(titles.pub_id) = 1 THEN 'ALL' ELSE titles.pub_id END AS pub_id,
+      Avg(titles.price) AS avg_price
+      FROM dbo.titles AS titles
+      WHERE titles.price IS NOT NULL
+      GROUP BY titles.pub_id WITH ROLLUP
+      ORDER BY pub_id;
+  END;
 GO

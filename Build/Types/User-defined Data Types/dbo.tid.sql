@@ -1,4 +1,2 @@
-CREATE TYPE [dbo].[tid] FROM varchar (6) NOT NULL
-GO
-GRANT REFERENCES ON TYPE:: [dbo].[tid] TO [public]
+CREATE TYPE [dbo].[tid] FROM nvarchar (8) NOT NULL
 GO
