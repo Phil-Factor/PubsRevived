@@ -194,4 +194,4 @@ IF @version <> '$BeforeVersion'
   }
   
 }
-
+Write-Verbose 'Compiled SourceControl Function'

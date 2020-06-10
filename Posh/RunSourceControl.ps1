@@ -1,6 +1,6 @@
 ﻿$TheGithubDirectory ='S:\work\Github\PubsRevived'
 cd $TheGithubDirectory
- & '.\Posh\SourceControl.ps1'
+.  '.\Posh\SourceControl.ps1'
 
 <#  do the initial save into source control #>
 SourceControl @{
