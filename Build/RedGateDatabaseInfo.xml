@@ -6,11 +6,9 @@
   <DefaultUser>dbo</DefaultUser>
   <DefaultFilegroup>PRIMARY</DefaultFilegroup>
   <DatabaseVersion>14</DatabaseVersion>
-  <ServerVersion>14.0.2027.2</ServerVersion>
+  <ServerVersion>14.0</ServerVersion>
   <IsAzure>False</IsAzure>
-  <ScriptFolderType>Default</ScriptFolderType>
   <MaxDataFileSize>10485760</MaxDataFileSize>
-  <ProjectGuid>e6b8a1e6-3aac-400b-a585-98a93d8a9b97</ProjectGuid>
   <WriteToFileOptions>
     <Prefixes>
       <None>
