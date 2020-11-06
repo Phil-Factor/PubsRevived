@@ -4,9 +4,9 @@ CREATE TABLE [dbo].[roysched]
 [lorange] [int] NULL,
 [hirange] [int] NULL,
 [royalty] [int] NULL
-) ON [PRIMARY]
+)
 GO
-CREATE NONCLUSTERED INDEX [titleidind] ON [dbo].[roysched] ([title_id]) ON [PRIMARY]
+CREATE NONCLUSTERED INDEX [titleidind] ON [dbo].[roysched] ([title_id])
 GO
-ALTER TABLE [dbo].[roysched] ADD CONSTRAINT [FK_RoySchedTitles] FOREIGN KEY ([title_id]) REFERENCES [dbo].[titles] ([title_id])
+ALTER TABLE [dbo].[roysched] ADD CONSTRAINT [FK_RoySchedTitles] FOREIGN KEY ([title_id]) REFERENCES [dbo].[publications] ([Publication_id]) ON DELETE CASCADE
 GO
