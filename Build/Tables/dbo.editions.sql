@@ -10,3 +10,5 @@ ALTER TABLE [dbo].[editions] ADD CONSTRAINT [PK_editions] PRIMARY KEY CLUSTERED 
 GO
 ALTER TABLE [dbo].[editions] ADD CONSTRAINT [fk_edition] FOREIGN KEY ([publication_id]) REFERENCES [dbo].[publications] ([Publication_id])
 GO
+ALTER TABLE [dbo].[editions] ADD CONSTRAINT [FK_EditionType] FOREIGN KEY ([Publication_type]) REFERENCES [dbo].[EditionType] ([TheType])
+GO
