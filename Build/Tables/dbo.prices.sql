@@ -1,8 +1,9 @@
 CREATE TABLE [dbo].[prices]
 (
 [Price_id] [int] NOT NULL IDENTITY(1, 1),
-[Edition_id] [int] NULL,
-[price] [dbo].[Dollars] NULL,
+[Edition_id] [int] NOT NULL,
+[name] [nvarchar] (80) NULL,
+[price] [dbo].[Dollars] NOT NULL,
 [advance] [dbo].[Dollars] NULL,
 [royalty] [int] NULL,
 [ytd_sales] [int] NULL,
