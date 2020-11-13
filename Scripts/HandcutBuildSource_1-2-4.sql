@@ -1,4 +1,9 @@
 USE master;
+
+SET QUOTED_IDENTIFIER ON
+GO
+SET ANSI_NULLS ON
+
 GO
 /*if the database doesn't exist, then build it */
 IF NOT EXISTS (SELECT databases.name FROM sys.databases WHERE databases.name LIKE 'pubsBuild')
@@ -80,6 +85,10 @@ AS N'<xsd:schema xmlns:xsd="http://www.w3.org/2001/XMLSchema">
   </xsd:element>
 </xsd:schema>'
 GO
+
+/*--The (re)Build Phase --*/
+
+GO
 CREATE TABLE dbo.Limbo
 /* this is used for rollback scripts if the current version has data 
 that needs to be preserved but for which the version schema has no place
@@ -113,16 +122,18 @@ GO
 /* Table of publishers and their location */
 CREATE TABLE dbo.publishers
 (
-pub_id char (8) COLLATE Latin1_General_CI_AS NOT NULL --
+pub_id char (8)  NOT NULL --
    CONSTRAINT UPKCL_pubind PRIMARY KEY CLUSTERED  (pub_id),
    CONSTRAINT GetPubidright CHECK ((pub_id='1756' OR pub_id='1622' OR pub_id='0877'
                                       OR pub_id='0736' OR pub_id='1389' OR pub_id like '99[0-9][0-9]')),
-pub_name nvarchar (80) COLLATE Latin1_General_CI_AS NULL,
-city nvarchar (40) COLLATE Latin1_General_CI_AS NULL,
-state char (2) COLLATE Latin1_General_CI_AS NULL,
-country varchar (30) COLLATE Latin1_General_CI_AS NULL CONSTRAINT godsOwnCountry DEFAULT ('USA')
+pub_name nvarchar (80)  NULL,
+city nvarchar (40)  NULL,
+state char (2)  NULL,
+country varchar (30)  NULL CONSTRAINT godsOwnCountry DEFAULT ('USA')
 )
 GO
+
+go
 CREATE TABLE dbo.publications
 
 /* Formerly the Titles table but it was split out
@@ -130,10 +141,10 @@ Contains titles, when published, who published them, when and notes */
 (
 Publication_id dbo.tid NOT NULL --
   CONSTRAINT PK_Publication PRIMARY KEY CLUSTERED  (Publication_id),
-title varchar (80) COLLATE Latin1_General_CI_AS NOT NULL,
-pub_id char (8) COLLATE Latin1_General_CI_AS NULL --
+title varchar (80)  NOT NULL,
+pub_id char (8)  NULL --
   CONSTRAINT fkPublishers FOREIGN KEY (pub_id) REFERENCES dbo.publishers (pub_id),
-notes varchar (200) COLLATE Latin1_General_CI_AS NULL,
+notes varchar (200)  NULL,
 pubdate datetime NOT NULL CONSTRAINT pub_NowDefault DEFAULT (getdate())
 )
 GO
@@ -151,7 +162,7 @@ will be others but each will have a different date of issue and price */
 Edition_id int NOT NULL IDENTITY(1, 1),
 publication_id dbo.tid NOT NULL,
 PublicationName NVARCHAR(255) NULL,
-Publication_type nvarchar (20) COLLATE Latin1_General_CI_AS NOT NULL DEFAULT ('book'),
+Publication_type nvarchar (20) NOT NULL DEFAULT ('book'),
 EditionDate datetime2 NOT NULL DEFAULT (getdate()),
 EditionReplacedDate Datetime2
 )
@@ -180,23 +191,8 @@ PriceStartDate datetime2 NOT NULL DEFAULT (getdate()),
 PriceEndDate datetime2 NULL
 )
 GO
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_NULLS ON
-GO
-Create view dbo.titles
-/* this view replaces the old TITLES table and shows only those books that represent each publication and only the current price */
-as
-SELECT publications.Publication_id AS title_id, publications.title, pub_id,
-  price, advance, royalty, ytd_sales, notes, pubdate
-  FROM publications
-    INNER JOIN editions
-      ON editions.publication_id = publications.Publication_id
-     AND Publication_type = 'book'
-    INNER JOIN prices
-      ON prices.Edition_id = editions.Edition_id
-  WHERE prices.PriceEndDate IS NULL;
-GO
+
+
 /* the unique collection of types of book, with one primary tag, showing where
 they should be displayed. No book can have more than one tag and should have at
 least one.*/
@@ -260,11 +256,11 @@ GO
 /*  record of sales to book stores. These are for each publication but only for books */
 CREATE TABLE dbo.sales
 (
-stor_id char (8) COLLATE Latin1_General_CI_AS NOT NULL,
-ord_num nvarchar (40) COLLATE Latin1_General_CI_AS NOT NULL,
+stor_id char (8)  NOT NULL,
+ord_num nvarchar (40)  NOT NULL,
 ord_date datetime NOT NULL,
 qty smallint NOT NULL,
-payterms varchar (12) COLLATE Latin1_General_CI_AS NOT NULL,
+payterms varchar (12)  NOT NULL,
 Publication_id dbo.tid NOT NULL
 )
 GO
@@ -322,9 +318,9 @@ GO
 /* extra info about each publisher */
 CREATE TABLE dbo.pub_info
 (
-pub_id char (8) COLLATE Latin1_General_CI_AS NOT NULL,
+pub_id char (8)  NOT NULL,
 logo varbinary (max) NULL,
-pr_info nvarchar (max) COLLATE Latin1_General_CI_AS NULL
+pr_info nvarchar (max)  NULL
 )
 GO
 ALTER TABLE dbo.pub_info ADD CONSTRAINT UPKCL_pubinfo PRIMARY KEY CLUSTERED  (pub_id)
@@ -338,12 +334,12 @@ GO
 CREATE TABLE dbo.employee
 (
 emp_id dbo.empid NOT NULL,
-fname nvarchar (40) COLLATE Latin1_General_CI_AS NOT NULL,
-minit char (1) COLLATE Latin1_General_CI_AS NULL,
-lname varchar (30) COLLATE Latin1_General_CI_AS NOT NULL,
+fname nvarchar (40) NOT NULL,
+minit char (1) NULL,
+lname varchar (30)  NOT NULL,
 job_id int NOT NULL CONSTRAINT LetsMakeItOne DEFAULT ((1)),
 job_lvl tinyint NULL CONSTRAINT DefaultToTen DEFAULT ((10)),
-pub_id char (8) COLLATE Latin1_General_CI_AS NOT NULL CONSTRAINT HighNumber DEFAULT ('9952'),
+pub_id char (8)  NOT NULL CONSTRAINT HighNumber DEFAULT ('9952'),
 hire_date datetime NOT NULL CONSTRAINT CouldBeToday DEFAULT (getdate())
 )
 GO
@@ -414,9 +410,64 @@ SELECT t.title, ta.au_ord, a.au_lname, t.price, t.ytd_sales, t.pub_id
 
 GO
 
-SET QUOTED_IDENTIFIER ON
+CREATE VIEW dbo.titles
+/* this view replaces the old TITLES table and shows only those books that represent each publication and only the current price */
+AS
+SELECT publications.Publication_id AS title_id, publications.title,
+  Tag AS [Type], pub_id, price, advance, royalty, ytd_sales, notes, pubdate
+  FROM publications
+    INNER JOIN editions
+      ON editions.publication_id = publications.Publication_id
+     AND Publication_type = 'book'
+    INNER JOIN prices
+      ON prices.Edition_id = editions.Edition_id
+    LEFT OUTER JOIN TagTitle
+      ON TagTitle.title_id = publications.Publication_id
+     AND TagTitle.Is_Primary = 1 --just the first, primary, tag
+    LEFT OUTER JOIN dbo.TagName
+      ON TagTitle.TagName_ID = TagName.TagName_ID
+  WHERE prices.PriceEndDate IS NULL;
+
 GO
-SET ANSI_NULLS ON
+CREATE   VIEW [dbo].[PublishersByPublicationType] as
+/* A view to provide the number of each type of publication produced
+by each publisher*/
+SELECT Coalesce(publishers.pub_name, '---All types') AS publisher,
+Sum(CASE WHEN Editions.Publication_type = 'AudioBook' THEN 1 ELSE 0 END) AS 'AudioBook',
+Sum(CASE WHEN Editions.Publication_type ='Book' THEN 1 ELSE 0 END) AS 'Book',
+Sum(CASE WHEN Editions.Publication_type ='Calendar' THEN 1 ELSE 0 END) AS 'Calendar',
+Sum(CASE WHEN Editions.Publication_type ='Ebook' THEN 1 ELSE 0 END) AS 'Ebook',
+Sum(CASE WHEN Editions.Publication_type ='Hardback' THEN 1 ELSE 0 END) AS 'Hardback',
+Sum(CASE WHEN Editions.Publication_type ='Map' THEN 1 ELSE 0 END) AS 'Map',
+Sum(CASE WHEN Editions.Publication_type ='Paperback' THEN 1 ELSE 0 END) AS 'PaperBack',
+Count(*) AS total
+ FROM dbo.publishers
+INNER JOIN dbo.publications
+ON publications.pub_id = publishers.pub_id
+INNER JOIN editions ON editions.publication_id = publications.Publication_id
+INNER JOIN dbo.prices ON prices.Edition_id = editions.Edition_id
+WHERE prices.PriceEndDate IS null 
+GROUP BY publishers.pub_name
+WITH ROLLUP
+GO
+CREATE   VIEW [dbo].[TitlesAndEditionsByPublisher]
+AS
+/* A view to provide the number of each type of publication produced
+by each publisher*/
+SELECT publishers.pub_name AS publisher, title,
+  String_Agg
+    (
+    Publication_type + ' ($' + Convert(VARCHAR(20), price) + ')', ', '
+    ) AS ListOfEditions
+  FROM dbo.publishers
+    INNER JOIN dbo.publications
+      ON publications.pub_id = publishers.pub_id
+    INNER JOIN editions
+      ON editions.publication_id = publications.Publication_id
+    INNER JOIN dbo.prices
+      ON prices.Edition_id = editions.Edition_id
+  WHERE prices.PriceEndDate IS NULL
+  GROUP BY publishers.pub_name, title;
 GO
 
 
@@ -432,11 +483,8 @@ AS
       WHERE titleauthor.royaltyper = @percentage;
   END;
 GO
-SET QUOTED_IDENTIFIER ON
-GO
-SET ANSI_NULLS ON
-GO
-CREATE   PROCEDURE [dbo].[reptq1]
+
+CREATE OR alter PROCEDURE reptq1
 AS
   BEGIN
     SELECT CASE WHEN Grouping(publications.pub_id) = 1 
@@ -471,10 +519,6 @@ AS
   END;
 
 GO
-SET ANSI_NULLS ON;
-GO
-SET QUOTED_IDENTIFIER ON;
-GO
 
 CREATE PROCEDURE dbo.reptq3 @lolimit dbo.Dollars, @hilimit dbo.Dollars,
   @type CHAR(12)
@@ -497,11 +541,6 @@ AS
   END;
 GO
 
-SET QUOTED_IDENTIFIER ON
-GO
-
-SET ANSI_NULLS ON
-GO
 CREATE FUNCTION dbo.TitlesFromTags
 /**
 Summary: >
@@ -1905,13 +1944,9 @@ GO
 
 INSERT INTO dbo.EditionType (TheType)
 VALUES
-( N'AudioBook' ), 
-( N'Book' ), 
-( N'Calendar' ), 
-( N'Ebook' ), 
-( N'Hardback' ), 
-( N'Map' ), 
-( N'Paperback' )
+  (N'AudioBook'),(N'Book'),(N'Calendar'),
+  (N'Ebook'),(N'Hardback'), (N'Map'),
+  (N'Paperback');
 SET IDENTITY_INSERT dbo.editions on
 INSERT INTO dbo.editions 
 (Edition_id, publication_id, PublicationName, Publication_type, EditionDate, EditionReplacedDate)
