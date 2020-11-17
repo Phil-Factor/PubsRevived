@@ -1,0 +1,147 @@
+@startuml
+!define table(x) class x << (T,mistyrose) >>
+!define view(x) class x << (V,lightblue) >>
+!define table(x) class x << (T,mistyrose) >>
+!define tr(x) class x << (R,red) >>
+!define tf(x) class x << (F,darkorange) >>
+!define af(x) class x << (F,white) >>
+!define fn(x) class x << (F,plum) >>
+!define fs(x) class x << (F,tan) >>
+!define ft(x) class x << (F,wheat) >>
+!define if(x) class x << (F,gaisboro) >>
+!define p(x) class x << (P,indianred) >>
+!define pc(x) class x << (P,lemonshiffon) >>
+!define x(x) class x << (P,linen) >>
+
+hide methods
+hide stereotypes
+skinparam classarrowcolor gray
+
+table(dbo.stores) {
+city: nvarchar
+state: char
+stor_address: nvarchar
+stor_id: char <<pk>>
+stor_name: nvarchar
+zip: char
+}
+table(dbo.sales) {
+ord_date: datetime
+ord_num: nvarchar <<pk>>
+payterms: varchar
+qty: smallint
+stor_id: char <<pk>> <<fk>>
+title_id: tid <<pk>> <<fk>>
+}
+table(dbo.roysched) {
+hirange: int
+lorange: int
+royalty: int
+title_id: tid <<fk>>
+}
+table(dbo.discounts) {
+discount: decimal
+discounttype: nvarchar
+highqty: smallint
+lowqty: smallint
+stor_id: char <<fk>>
+}
+table(dbo.jobs) {
+job_desc: varchar
+Job_id: int <<pk>>
+max_lvl: tinyint
+min_lvl: tinyint
+}
+table(dbo.pub_info) {
+logo: varbinary
+pr_info: nvarchar
+pub_id: char <<pk>> <<fk>>
+}
+table(dbo.employee) {
+emp_id: empid <<pk>>
+fname: nvarchar
+hire_date: datetime
+job_id: int <<fk>>
+job_lvl: tinyint
+lname: varchar
+minit: char
+pub_id: char <<fk>>
+__ trigger __
+employee_insupd
+}
+table(dbo.publications) {
+notes: varchar
+pub_id: char <<fk>>
+pubdate: datetime
+Publication_id: tid <<pk>>
+title: varchar
+}
+table(dbo.editions) {
+Edition_id: int <<pk>>
+EditionDate: datetime2
+publication_id: tid <<fk>>
+Publication_type: nvarchar <<fk>>
+}
+table(dbo.prices) {
+advance: Dollars
+Edition_id: int <<fk>>
+price: Dollars
+Price_id: int <<pk>>
+PriceEndDate: datetime2
+PriceStartDate: datetime2
+royalty: int
+ytd_sales: int
+}
+table(dbo.EditionType) {
+TheType: nvarchar <<pk>>
+}
+table(dbo.authors) {
+address: nvarchar
+au_fname: nvarchar
+au_id: id <<pk>>
+au_lname: nvarchar
+city: nvarchar
+contract: bit
+phone: varchar
+state: char
+zip: char
+}
+table(dbo.publishers) {
+city: nvarchar
+country: varchar
+pub_id: char <<pk>>
+pub_name: nvarchar
+state: char
+}
+table(dbo.TagName) {
+Tag: varchar
+TagName_ID: int <<pk>>
+}
+table(dbo.TagTitle) {
+Is_Primary: bit
+TagName_ID: int <<pk>> <<fk>>
+TagTitle_ID: int
+title_id: tid <<pk>> <<fk>>
+}
+table(dbo.titleauthor) {
+au_id: id <<pk>> <<fk>>
+au_ord: tinyint
+royaltyper: int
+title_id: tid <<pk>> <<fk>>
+}
+dbo.sales --> dbo.stores:FK
+dbo.discounts --> dbo.stores:FK
+dbo.employee -right-> dbo.jobs:FK
+dbo.editions -left-> dbo.publications:FK
+dbo.sales -up-> dbo.publications:FK
+dbo.roysched -down-> dbo.publications:FK
+dbo.TagTitle -down-> dbo.publications:FK
+dbo.titleauthor -right-> dbo.publications:FK
+dbo.prices --> dbo.editions:FK
+dbo.editions --> dbo.EditionType:FK
+dbo.titleauthor -down-> dbo.authors:FK
+dbo.pub_info --> dbo.publishers:FK
+dbo.employee --> dbo.publishers:FK
+dbo.publications -up-> dbo.publishers:FK
+dbo.TagTitle -up-> dbo.TagName:FK
+@enduml

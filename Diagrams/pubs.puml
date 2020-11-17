@@ -1,0 +1,118 @@
+@startuml
+!define table(x) class x << (T,mistyrose) >>
+!define view(x) class x << (V,lightblue) >>
+!define table(x) class x << (T,mistyrose) >>
+!define tr(x) class x << (R,red) >>
+!define tf(x) class x << (F,darkorange) >>
+!define af(x) class x << (F,white) >>
+!define fn(x) class x << (F,plum) >>
+!define fs(x) class x << (F,tan) >>
+!define ft(x) class x << (F,wheat) >>
+!define if(x) class x << (F,gaisboro) >>
+!define p(x) class x << (P,indianred) >>
+!define pc(x) class x << (P,lemonshiffon) >>
+!define x(x) class x << (P,linen) >>
+
+hide methods
+hide stereotypes
+skinparam classarrowcolor gray
+
+table(dbo.authors) {
+address: varchar
+au_fname: varchar
+au_id: id <<pk>>
+au_lname: varchar
+city: varchar
+contract: bit
+phone: char
+state: char
+zip: char
+}
+table(dbo.publishers) {
+city: varchar
+country: varchar
+pub_id: char <<pk>>
+pub_name: varchar
+state: char
+}
+table(dbo.titles) {
+advance: money
+notes: varchar
+price: money
+pub_id: char <<fk>>
+pubdate: datetime
+royalty: int
+title: varchar
+title_id: tid <<pk>>
+type: char
+ytd_sales: int
+}
+table(dbo.titleauthor) {
+au_id: id <<pk>> <<fk>>
+au_ord: tinyint
+royaltyper: int
+title_id: tid <<pk>> <<fk>>
+}
+table(dbo.stores) {
+city: varchar
+state: char
+stor_address: varchar
+stor_id: char <<pk>>
+stor_name: varchar
+zip: char
+}
+table(dbo.sales) {
+ord_date: datetime
+ord_num: varchar <<pk>>
+payterms: varchar
+qty: smallint
+stor_id: char <<pk>> <<fk>>
+title_id: tid <<pk>> <<fk>>
+}
+table(dbo.roysched) {
+hirange: int
+lorange: int
+royalty: int
+title_id: tid <<fk>>
+}
+table(dbo.discounts) {
+discount: decimal
+discounttype: varchar
+highqty: smallint
+lowqty: smallint
+stor_id: char <<fk>>
+}
+table(dbo.jobs) {
+job_desc: varchar
+job_id: smallint <<pk>>
+max_lvl: tinyint
+min_lvl: tinyint
+}
+table(dbo.pub_info) {
+logo: image
+pr_info: text
+pub_id: char <<pk>> <<fk>>
+}
+table(dbo.employee) {
+emp_id: empid <<pk>>
+fname: varchar
+hire_date: datetime
+job_id: smallint <<fk>>
+job_lvl: tinyint
+lname: varchar
+minit: char
+pub_id: char <<fk>>
+__ trigger __
+employee_insupd
+}
+dbo.titleauthor --> dbo.authors:FK
+dbo.titles -up-> dbo.publishers:FK
+dbo.pub_info -down-> dbo.publishers:FK
+dbo.employee -down-> dbo.publishers:FK
+dbo.titleauthor -up-> dbo.titles:FK
+dbo.sales --> dbo.titles:FK
+dbo.roysched -up-> dbo.titles:FK
+dbo.sales --> dbo.stores:FK
+dbo.discounts --> dbo.stores:FK
+dbo.employee --> dbo.jobs:FK
+@enduml
